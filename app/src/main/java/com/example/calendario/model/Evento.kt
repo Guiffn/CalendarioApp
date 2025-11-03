@@ -21,7 +21,7 @@ open class EventoCalendario(
 
 
 data class EventoAniversario(
-    val aniversariante: String = ""
+    var aniversariante: String = ""
 ) : EventoCalendario() { // A herança acontece aqui, nos dois pontos ':'
 
     // O bloco 'init' é executado assim que um objeto 'EventoAniversario' é criado.
@@ -38,7 +38,7 @@ data class EventoAniversario(
 }
 
 data class EventoReuniao(
-    val local: String = "",
+    var local: String = "",
     val participantes: List<String> = emptyList() // Uma lista para guardar os nomes
 ) : EventoCalendario() {
 

@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -50,20 +49,19 @@ android {
     }
 }
 
-// ... (seção de plugins e android fica igual) ...
 
 dependencies {
     // BOM do Firebase para gerenciar versões
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
-    // Dependências do Firebase que você realmente precisa
-    // A BOM vai escolher a versão certa para esta!
     implementation("com.google.firebase:firebase-firestore-ktx")
-    // Você também vai precisar da autenticação em breve:
-    // implementation("com.google.firebase:firebase-auth-ktx")
+
+
+    implementation("com.google.firebase:firebase-auth-ktx")
+
 
     // Dependências padrão do AndroidX e Compose
-    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.core.ktx) // <--- Sem duplicata
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -82,4 +80,3 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
-
