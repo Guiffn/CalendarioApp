@@ -8,6 +8,7 @@ pluginManagement {
             }
         }
 
+
         mavenCentral()
         gradlePluginPortal()
     }
@@ -17,8 +18,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // A linha "maven { url = uri("https://jitpack.io") }" foi removida.
-        // O Maven Central acima é o correto.
+        // Certifique-se de que NÃO HÁ NADA AQUI além de google() e mavenCentral()
     }
 }
 

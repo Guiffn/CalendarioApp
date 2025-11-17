@@ -18,6 +18,7 @@ android {
         targetSdk = 36 // Se 36 estiver dando erro, use 34
         versionCode = 1
 
+
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -28,6 +29,7 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+
 
             )
         }
@@ -41,6 +43,7 @@ android {
         // CORREÇÃO: "17" correspondente ao Java 17
         jvmTarget = "17"
     }
+
 
     buildFeatures {
         compose = true
@@ -59,10 +62,10 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // --- DEPENDÊNCIAS DO CALENDÁRIO CORRIGIDAS ---
-    // O groupId mudou (inclui 'composecalendar') e o artifactId mudou (sem hífen)
-    implementation("io.github.boguszpawlowski.composecalendar:composecalendar:1.3.1")
-    implementation("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.3.1")
+    // --- CORREÇÃO DEFINITIVA DAS DEPENDÊNCIAS ---
+    // Eu tinha errado os nomes. Estes são os corretos (com hifens):
+    implementation("io.github.boguszpawlowski:compose-calendar:1.3.1")
+    implementation("io.github.boguszpawlowski:compose-calendar-kotlinx-datetime:1.3.1")
 
 
     // Dependências padrão do AndroidX e Compose
