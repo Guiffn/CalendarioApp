@@ -40,21 +40,14 @@ fun AppNavigation() {
     // Instância única do ViewModel compartilhada entre as telas
     val eventoViewModel: EventoViewModel = viewModel()
 
-    // --- MUDANÇA PRINCIPAL (TESTE DE DEBUG) ---
-    // Nós vamos forçar o app a começar DIRETAMENTE na tela do Calendário.
-    val startDestination = Screen.Calendario.route
-
-    /*
-    // --- CÓDIGO ORIGINAL (DESATIVADO TEMPORARIAMENTE) ---
+    // --- CÓDIGO RESTAURADO ---
     // Decide qual tela mostrar primeiro
     val startDestination = if (Firebase.auth.currentUser != null) {
-        // --- MUDANÇA AQUI: A nova tela principal é o Calendário
         Screen.Calendario.route
     } else {
         Screen.Login.route
     }
-    */
-    // --- FIM DA MUDANÇA ---
+    // --- FIM DA RESTAURAÇÃO ---
 
     NavHost(navController = navController, startDestination = startDestination) {
 
@@ -62,9 +55,6 @@ fun AppNavigation() {
             LoginScreen(navController = navController)
         }
 
-        // --- ROTA ADICIONADA ---
-        // Agora, quando o LoginScreen navegar para "calendario",
-        // esta tela será encontrada e o app não vai mais fechar.
         composable(Screen.Calendario.route) {
             CalendarioScreen(
                 navController = navController,
