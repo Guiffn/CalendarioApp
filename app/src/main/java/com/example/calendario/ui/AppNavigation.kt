@@ -8,7 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.calendario.ui.screens.CalendarioScreen // --- IMPORTAÇÃO ADICIONADA ---
+// --- IMPORTAÇÃO ADICIONADA ---
+import com.example.calendario.ui.screens.CalendarioScreen
 import com.example.calendario.ui.screens.CriarEventoScreen
 import com.example.calendario.ui.screens.DetalheEventoScreen
 import com.example.calendario.ui.screens.ListaEventosScreen
@@ -20,7 +21,8 @@ import com.google.firebase.ktx.Firebase
 // 1. Definir as rotas (telas)
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    object Calendario : Screen("calendario") // --- ROTA ADICIONADA ---
+    // --- ROTA ADICIONADA ---
+    object Calendario : Screen("calendario")
     object ListaEventos : Screen("lista_eventos")
     object DetalheEvento : Screen("detalhe_evento/{eventoId}") {
         fun createRoute(eventoId: String) = "detalhe_evento/$eventoId"
@@ -53,7 +55,9 @@ fun AppNavigation() {
             LoginScreen(navController = navController)
         }
 
-        // --- Rota ADICIONADA ---
+        // --- ROTA ADICIONADA ---
+        // Agora, quando o LoginScreen navegar para "calendario",
+        // esta tela será encontrada e o app não vai mais fechar.
         composable(Screen.Calendario.route) {
             CalendarioScreen(
                 navController = navController,

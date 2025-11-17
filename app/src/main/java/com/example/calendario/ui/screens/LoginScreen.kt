@@ -22,7 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+// A importação "TextButton" foi removida
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -112,8 +112,9 @@ fun LoginScreen(navController: NavController) {
             // 4. Botão de Login (Corrigido)
             Button(
                 onClick = {
-                    // --- CORREÇÃO IMPORTANTE ---
-                    // Navega para a TELA CERTA (Calendario) após o login.
+                    // --- CORREÇÃO DO CRASH ---
+                    // Navega para a TELA CERTA (Calendario), que está
+                    // definida no seu AppNavigation.kt.
                     navController.navigate(Screen.Calendario.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -125,18 +126,8 @@ fun LoginScreen(navController: NavController) {
                 Text("Login", style = MaterialTheme.typography.titleMedium)
             }
 
-            // 5. Botão de Registro (Corrigido e com texto)
-            TextButton(
-                onClick = {
-                    // --- CORREÇÃO IMPORTANTE ---
-                    // Navega para a TELA CERTA (Calendario) após o "registro".
-                    navController.navigate(Screen.Calendario.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                }
-            ) {
-                Text("Não tem uma conta? Registre-se")
-            }
+            // 5. Botão "Registre-se" FOI REMOVIDO
+            // O TextButton(...) que estava aqui foi apagado.
         }
     }
 }
