@@ -182,9 +182,11 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 dayContent = { day ->
                     DayContent(
                         day = day,
+                        // 'day.date' é java.time.LocalDate, 'selection' agora também é
                         isSelected = selection == day.date,
                         temEvento = diasComEvento.contains(day.date)
                     ) { clickedDay ->
+                        // A atribuição agora funciona
                         selection = if (selection == clickedDay.date) null else clickedDay.date
                     }
                 }

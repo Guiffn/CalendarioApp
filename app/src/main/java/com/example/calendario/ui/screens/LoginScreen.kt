@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.calendario.ui.Screen
 // --- IMPORTAÇÕES DO FIREBASE AUTH REMOVIDAS ---
+// import com.google.firebase.auth.FirebaseAuth
+// import com.google.firebase.auth.ktx.auth
+// import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -43,6 +46,8 @@ fun LoginScreen(navController: NavController) {
     var senha by remember { mutableStateOf("") }
 
     // --- TODA A LÓGICA DO FIREBASE AUTH FOI REMOVIDA ---
+    // val auth: FirebaseAuth = Firebase.auth <-- REMOVIDO (esta era a causa do crash)
+    // var mensagemErro by remember { mutableStateOf<String?>(null) } <-- REMOVIDO
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -105,11 +110,15 @@ fun LoginScreen(navController: NavController) {
             }
             Spacer(modifier = Modifier.height(24.dp))
 
+            // A mensagem de erro também foi removida
+
             // Botão de Login (Corrigido para NÃO USAR Firebase)
             Button(
                 onClick = {
                     // --- LÓGICA DE LOGIN REMOVIDA ---
                     // Agora, o botão APENAS navega.
+                    // Ele ignora o email e a senha, como você pediu.
+                    // Isto vai parar o "crash".
                     navController.navigate(Screen.Calendario.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
@@ -120,6 +129,8 @@ fun LoginScreen(navController: NavController) {
             ) {
                 Text("Login", style = MaterialTheme.typography.titleMedium)
             }
+
+            // O botão "Registre-se" já tinha sido removido.
         }
     }
 }
