@@ -38,6 +38,9 @@ android {
         // CORREÇÃO: Java 17 é o recomendado para as versões mais novas do Android Gradle Plugin
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+
+        // --- ADICIONE ESTA LINHA PARA CORRIGIR O ERRO ---
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         // CORREÇÃO: "17" correspondente ao Java 17
@@ -56,16 +59,19 @@ android {
 
 
 dependencies {
+    // --- ADICIONE ESTA LINHA PARA CORRIGIR O ERRO ---
+    // Esta é a biblioteca que faz o "Desugaring"
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     // BOM do Firebase para gerenciar versões
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // --- CORREÇÃO DEFINITIVA DAS DEPENDÊNCIAS ---
-    // Eu tinha errado os nomes. Estes são os corretos (com hifens):
-    implementation("io.github.boguszpawlowski:compose-calendar:1.3.1")
-    implementation("io.github.boguszpawlowski:compose-calendar-kotlinx-datetime:1.3.1")
+    // --- NOVA BIBLIOTECA DE CALENDÁRIO (Kizitonwose) ---
+    implementation("com.kizitonwose.calendar:compose:2.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
 
     // Dependências padrão do AndroidX e Compose

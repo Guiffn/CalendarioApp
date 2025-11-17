@@ -1,12 +1,12 @@
 package com.example.calendario.ui.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,9 +17,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,70 +51,88 @@ import com.example.calendario.ui.Screen
 import com.example.calendario.viewmodel.EventoViewModel
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
-import io.github.boguszpawlowski.composecalendar.SelectableCalendar
-import io.github.boguszpawlowski.composecalendar.day.DayState
-import io.github.boguszpawlowski.composecalendar.rememberSelectableCalendarState
-import io.github.boguszpawlowski.composecalendar.selection.DynamicSelectionState
-import io.github.boguszpawlowski.composecalendar.selection.SelectionMode
+import com.kizitonwose.calendar.compose.HorizontalCalendar
+import com.kizitonwose.calendar.compose.rememberCalendarState
+import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.CalendarMonth
+import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.core.daysOfWeek
+import kotlinx.coroutines.launch
+// --- MUDANÇAS DE IMPORTAÇÃO ---
 import kotlinx.datetime.Instant
-import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDate // Importação para conversão
 import kotlinx.datetime.toLocalDateTime
 import java.text.SimpleDateFormat
+import java.time.LocalDate // MUDANÇA: Usando java.time
+import java.time.YearMonth
+import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 
-// Esta é a nova tela principal
+// Esta é a nova tela principal, reescrita para a biblioteca "kizitonwose"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
 
-    // 1. Pega a lista completa de eventos do ViewModel
     val eventos by viewModel.eventos.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    // 2. Processa a lista de eventos para saber quais dias têm eventos (para os marcadores)
+    // --- MUDANÇA DE TIPO ---
+    // 1. Estado de seleção: Agora usa 'java.time.LocalDate'
+    var selection by remember { mutableStateOf<LocalDate?>(null) }
+
+    // 2. Lógica dos marcadores: Converte o Long para 'java.time.LocalDate'
     val diasComEvento by remember(eventos) {
         derivedStateOf {
             eventos.map {
-                // Converte o Long (milisegundos) para um LocalDate (kotlinx-datetime)
+                // Converte Long -> Instant -> kotlinx.datetime.LocalDate -> java.time.LocalDate
                 Instant.fromEpochMilliseconds(it.data)
                     .toLocalDateTime(TimeZone.currentSystemDefault())
                     .date
-            }.toSet() // .toSet() remove duplicatas e é rápido de consultar
+                    .toJavaLocalDate() // Converte para o tipo que a biblioteca do calendário usa
+            }.toSet()
         }
     }
 
-    // 3. Controla o estado do calendário (qual dia está selecionado)
-    var selectionState by remember { mutableStateOf<DynamicSelectionState?>(null) }
-    selectionState = rememberSelectableCalendarState(
-        selectionState = DynamicSelectionState(
-            selection = emptyList(),
-            selectionMode = SelectionMode.Single
-        )
-    )
-
-    // 4. Filtra a lista de eventos para mostrar apenas os do dia selecionado
-    val eventosDoDiaSelecionado by remember(selectionState?.selection, eventos) {
+    // 3. Lógica para filtrar a lista (agora usa o novo 'selection')
+    val eventosDoDiaSelecionado by remember(selection, eventos) {
         derivedStateOf {
-            val dataSelecionada = selectionState?.selection?.firstOrNull()
+            val dataSelecionada = selection
             if (dataSelecionada == null) {
                 emptyList()
             } else {
                 eventos.filter {
+                    // Converte o Long do evento para java.time.LocalDate para comparar
                     val dataEvento = Instant.fromEpochMilliseconds(it.data)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                         .date
-                    dataEvento == dataSelecionada
+                        .toJavaLocalDate() // Converte para o tipo que a seleção usa
+                    dataEvento == dataSelecionada // A comparação agora funciona
                 }
             }
         }
     }
 
+    // --- MUDANÇA NA OBTENÇÃO DA DATA ---
+    // 4. Configuração do estado do calendário (nova biblioteca)
+    val today = LocalDate.now() // Usa java.time.LocalDate.now()
+    val currentMonth = YearMonth.from(today) // Não precisa mais de .toJavaLocalDate()
+    val startMonth = currentMonth.minusMonths(100) // 100 meses no passado
+    val endMonth = currentMonth.plusMonths(100)   // 100 meses no futuro
+    val firstDayOfWeek = daysOfWeek().first() // Começa na Segunda (padrão)
+
+    val calendarState = rememberCalendarState(
+        startMonth = startMonth,
+        endMonth = endMonth,
+        firstVisibleMonth = currentMonth,
+        firstDayOfWeek = firstDayOfWeek
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Meu Calendário") },
-                // Botão de "Sair" (Logout)
                 actions = {
                     IconButton(onClick = {
                         Firebase.auth.signOut()
@@ -126,7 +146,6 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
             )
         },
         floatingActionButton = {
-            // Botão de "Adicionar" (FAB)
             FloatingActionButton(onClick = {
                 navController.navigate(Screen.CriarEvento.createRoute(null))
             }) {
@@ -139,19 +158,39 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 5. A Grade do Calendário
-            SelectableCalendar(
-                calendarState = selectionState!!,
-                modifier = Modifier.padding(horizontal = 16.dp),
-                // 6. Customização dos dias (para mostrar os marcadores)
-                dayContent = { dayState ->
-                    // 'dayState' tem informações sobre o dia (data, se está selecionado, etc.)
-                    // 'diasComEvento' é a nossa lista de dias que têm eventos.
-                    DayContent(dayState = dayState, temEvento = diasComEvento.contains(dayState.date))
+            // 5. O Calendário Horizontal
+            HorizontalCalendar(
+                state = calendarState,
+                // Cabeçalho (Nome do Mês, Setas)
+                monthHeader = { month ->
+                    MonthHeader(
+                        month = month,
+                        onPrevClicked = {
+                            coroutineScope.launch {
+                                calendarState.animateScrollToMonth(calendarState.firstVisibleMonth.yearMonth.minusMonths(1))
+                            }
+                        },
+                        onNextClicked = {
+                            coroutineScope.launch {
+                                calendarState.animateScrollToMonth(calendarState.firstVisibleMonth.yearMonth.plusMonths(1))
+                            }
+                        }
+                    )
+                },
+                // Conteúdo do Dia (O número)
+                dayContent = { day ->
+                    DayContent(
+                        day = day,
+                        // 'day.date' é java.time.LocalDate, 'selection' agora também é
+                        isSelected = selection == day.date,
+                        temEvento = diasComEvento.contains(day.date)
+                    ) { clickedDay ->
+                        // A atribuição agora funciona
+                        selection = if (selection == clickedDay.date) null else clickedDay.date
+                    }
                 }
             )
 
-            // 7. Botão para ver a lista completa
             Button(
                 onClick = { navController.navigate(Screen.ListaEventos.route) },
                 modifier = Modifier
@@ -161,17 +200,16 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 Text("Ver todos os eventos (Lista Completa)")
             }
 
-
-            // 8. A Lista de eventos do dia selecionado
             Text(
-                text = if (selectionState?.selection?.firstOrNull() != null) "Eventos do dia" else "Selecione um dia",
+                text = if (selection != null) "Eventos do dia" else "Selecione um dia",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
 
+            // 6. Lista de Eventos (agora sem ambiguidade)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(eventosDoDiaSelecionado) { evento ->
-                    // Usamos o mesmo 'EventoItem' da sua ListaEventosScreen
+                    // Esta chamada agora usa inequivocamente a EventoItem abaixo
                     EventoItem(evento = evento, onClick = {
                         evento.id?.let { id ->
                             navController.navigate(Screen.DetalheEvento.createRoute(id))
@@ -183,67 +221,81 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
     }
 }
 
-/**
- * Composable customizado para desenhar o dia no calendário.
- * Ele mostra um ponto (marcador) se houver um evento.
- */
+// Composable para o dia (reescrito para a nova biblioteca)
 @Composable
-fun DayContent(dayState: DayState<DynamicSelectionState>, temEvento: Boolean) {
-    val data = dayState.date
-    val estaSelecionado = dayState.selectionState.selection.contains(data)
-
-    // Define a cor de fundo (se está selecionado)
-    val backgroundColor = if (estaSelecionado) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        Color.Transparent
-    }
-
-    // Define a cor do texto (se está selecionado)
-    val textColor = if (estaSelecionado) {
-        MaterialTheme.colorScheme.onPrimary
-    } else {
-        MaterialTheme.colorScheme.onBackground
-    }
-
-    // Caixa para centralizar o texto e o marcador
-    Box(
-        modifier = Modifier
-            .size(40.dp) // Tamanho fixo para o dia
-            .clip(CircleShape)
-            .background(backgroundColor)
-            .clickable {
-                dayState.selectionState.onDateSelected(data)
-            },
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = data.dayOfMonth.toString(),
-                color = textColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            // 9. O Marcador (ponto)
-            if (temEvento) {
-                Box(
-                    modifier = Modifier
-                        .size(4.dp)
-                        .clip(CircleShape)
-                        .background(if (estaSelecionado) textColor else MaterialTheme.colorScheme.primary)
+fun DayContent(
+    day: CalendarDay,
+    isSelected: Boolean,
+    temEvento: Boolean,
+    onClick: (CalendarDay) -> Unit
+) {
+    // Só desenha se for um dia do mês atual
+    if (day.position == DayPosition.MonthDate) {
+        Box(
+            modifier = Modifier
+                .aspectRatio(1f) // Faz o dia ser um quadrado
+                .padding(2.dp)
+                .clip(CircleShape)
+                .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
+                .clickable { onClick(day) },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = day.date.dayOfMonth.toString(),
+                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
                 )
-            } else {
-                Spacer(modifier = Modifier.size(4.dp)) // Espaço vazio para alinhar
+                // Marcador de evento
+                if (temEvento) {
+                    Box(
+                        modifier = Modifier
+                            .size(4.dp)
+                            .clip(CircleShape)
+                            .background(if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.size(4.dp)) // Espaço vazio para alinhar
+                }
             }
         }
     }
 }
 
+// Composable para o cabeçalho do mês (novo)
+@Composable
+fun MonthHeader(
+    month: CalendarMonth,
+    onPrevClicked: () -> Unit,
+    onNextClicked: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onPrevClicked) {
+            Icon(Icons.Default.KeyboardArrowLeft, "Mês anterior")
+        }
+        Text(
+            text = "${
+                month.yearMonth.month.getDisplayName(
+                    TextStyle.FULL,
+                    Locale.getDefault()
+                )
+            } ${month.yearMonth.year}",
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f)
+        )
+        IconButton(onClick = onNextClicked) {
+            Icon(Icons.Default.KeyboardArrowRight, "Próximo mês")
+        }
+    }
+}
 
-/**
- * Esta função foi COPIADA do seu arquivo ListaEventosScreen.kt
- * para que possamos usá-la aqui e mostrar os eventos da mesma forma.
- */
+// --- ESTA FUNÇÃO PERMANECE AQUI ---
+// Ela será usada por CalendarioScreen e importada por ListaEventosScreen
 @Composable
 fun EventoItem(evento: EventoCalendario, onClick: () -> Unit) {
     val dataFormatada = remember(evento.data) {

@@ -1,6 +1,5 @@
 package com.example.calendario.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -65,6 +64,10 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
                 contentPadding = paddingValues
             ) {
                 items(eventos) { evento ->
+                    // --- MUDANÇA IMPORTANTE ---
+                    // Esta chamada agora importará a função 'EventoItem'
+                    // do arquivo 'CalendarioScreen.kt' (pois estão no mesmo pacote).
+                    // Isso resolve o erro de ambiguidade.
                     EventoItem(evento = evento, onClick = {
                         evento.id?.let { id ->
                             navController.navigate(Screen.DetalheEvento.createRoute(id))
@@ -76,29 +79,6 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
     }
 }
 
-/*
-   A função EventoItem() foi movida para o arquivo CalendarioScreen.kt,
-   mas não há problema em mantê-la aqui também se esta tela ainda a utiliza.
-   Para um projeto maior, nós a moveríamos para um arquivo "common" (comum),
-   mas para "Ctrl+V" é mais seguro deixá-la aqui E copiá-la para a CalendarioScreen.
-*/
-@Composable
-fun EventoItem(evento: EventoCalendario, onClick: () -> Unit) {
-    val dataFormatada = remember(evento.data) {
-        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        sdf.format(Date(evento.data))
-    }
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .clickable(onClick = onClick)
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = evento.titulo, style = MaterialTheme.typography.titleMedium)
-            Text(text = dataFormatada, style = MaterialTheme.typography.bodyMedium)
-            Text(text = evento.exibirDetalhes(), style = MaterialTheme.typography.bodySmall)
-        }
-    }
-}
+// --- FUNÇÃO DUPLICADA REMOVIDA DAQUI ---
+// A função @Composable fun EventoItem(...) foi deletada deste arquivo
+// para evitar o conflito.
