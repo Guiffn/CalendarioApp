@@ -22,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-// A importação "TextButton" foi removida
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,24 +29,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.calendario.ui.Screen
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+// --- IMPORTAÇÕES DO FIREBASE AUTH REMOVIDAS ---
+// import com.google.firebase.auth.FirebaseAuth
+// import com.google.firebase.auth.ktx.auth
+// import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
-    // Lógica de autenticação que você já usa
-    val auth: FirebaseAuth = Firebase.auth
-    var mensagemErro by remember { mutableStateOf<String?>(null) }
+
+    // --- TODA A LÓGICA DO FIREBASE AUTH FOI REMOVIDA ---
+    // val auth: FirebaseAuth = Firebase.auth <-- REMOVIDO (esta era a causa do crash)
+    // var mensagemErro by remember { mutableStateOf<String?>(null) } <-- REMOVIDO
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -108,36 +108,19 @@ fun LoginScreen(navController: NavController) {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Mostra a mensagem de erro do Firebase (se houver)
-            mensagemErro?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
+            // A mensagem de erro também foi removida
 
-            // Botão de Login (Corrigido)
+            // Botão de Login (Corrigido para NÃO USAR Firebase)
             Button(
                 onClick = {
-                    if (email.isNotBlank() && senha.isNotBlank()) {
-                        auth.signInWithEmailAndPassword(email, senha)
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    // --- CORREÇÃO DO CRASH ---
-                                    // Navega para a TELA CERTA (Calendario).
-                                    navController.navigate(Screen.Calendario.route) {
-                                        popUpTo(Screen.Login.route) { inclusive = true }
-                                    }
-                                } else {
-                                    mensagemErro = task.exception?.message ?: "Erro no login"
-                                }
-                            }
-                    } else {
-                        mensagemErro = "Por favor, preencha o email e a senha."
+                    // --- LÓGICA DE LOGIN REMOVIDA ---
+                    // Agora, o botão APENAS navega.
+                    // Ele ignora o email e a senha, como você pediu.
+                    // Isto vai parar o "crash".
+                    navController.navigate(Screen.Calendario.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
                 modifier = Modifier
@@ -147,7 +130,7 @@ fun LoginScreen(navController: NavController) {
                 Text("Login", style = MaterialTheme.typography.titleMedium)
             }
 
-            // Botão "Registre-se" FOI REMOVIDO
+            // O botão "Registre-se" já tinha sido removido.
         }
     }
 }
