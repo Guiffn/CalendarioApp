@@ -15,7 +15,10 @@ open class EventoCalendario(
     constructor() : this(null, "", 0L, "GERAL")
 
     open fun exibirDetalhes(): String {
-        return "Evento Padrão: $titulo"
+        // --- CORREÇÃO AQUI ---
+        // Se o título estiver em branco, retorna um texto genérico.
+        // Se tiver um título, mostra o título.
+        return if (titulo.isNotBlank()) "Evento Padrão: $titulo" else "Evento Padrão"
     }
 }
 
