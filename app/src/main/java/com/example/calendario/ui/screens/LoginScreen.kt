@@ -30,19 +30,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.calendario.ui.Screen
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
+    // Lógica de autenticação que você já usa
+    val auth: FirebaseAuth = Firebase.auth
+    var mensagemErro by remember { mutableStateOf<String?>(null) }
 
-    // Usamos um Scaffold para dar uma cor de fundo que combina com o tema
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surfaceVariant
     ) { paddingValues ->
@@ -50,23 +56,20 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp), // Aumentamos o padding
+                .padding(24.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 1. Ícone
             Icon(
                 imageVector = Icons.Default.DateRange,
                 contentDescription = "Ícone do Calendário",
-                tint = MaterialTheme.colorScheme.primary, // Cor do tema
+                tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
-
-            // 2. Títulos
             Text(
                 "Meu Calendário",
-                style = MaterialTheme.typography.headlineLarge, // Fonte maior
+                style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -77,7 +80,6 @@ fun LoginScreen(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(32.dp))
 
-            // 3. Card para agrupar os campos
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -94,7 +96,6 @@ fun LoginScreen(navController: NavController) {
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
                     OutlinedTextField(
                         value = senha,
                         onValueChange = { senha = it },
@@ -107,16 +108,36 @@ fun LoginScreen(navController: NavController) {
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // 4. Botão de Login (Corrigido)
+            // Mostra a mensagem de erro do Firebase (se houver)
+            mensagemErro?.let {
+                Text(
+                    text = it,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            // Botão de Login (Corrigido)
             Button(
                 onClick = {
-                    // --- CORREÇÃO DO CRASH ---
-                    // Navega para a TELA CERTA (Calendario), que está
-                    // definida no seu AppNavigation.kt.
-                    navController.navigate(Screen.Calendario.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                    if (email.isNotBlank() && senha.isNotBlank()) {
+                        auth.signInWithEmailAndPassword(email, senha)
+                            .addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    // --- CORREÇÃO DO CRASH ---
+                                    // Navega para a TELA CERTA (Calendario).
+                                    navController.navigate(Screen.Calendario.route) {
+                                        popUpTo(Screen.Login.route) { inclusive = true }
+                                    }
+                                } else {
+                                    mensagemErro = task.exception?.message ?: "Erro no login"
+                                }
+                            }
+                    } else {
+                        mensagemErro = "Por favor, preencha o email e a senha."
                     }
                 },
                 modifier = Modifier
@@ -126,8 +147,7 @@ fun LoginScreen(navController: NavController) {
                 Text("Login", style = MaterialTheme.typography.titleMedium)
             }
 
-            // 5. Botão "Registre-se" FOI REMOVIDO
-            // O TextButton(...) que estava aqui foi apagado.
+            // Botão "Registre-se" FOI REMOVIDO
         }
     }
 }

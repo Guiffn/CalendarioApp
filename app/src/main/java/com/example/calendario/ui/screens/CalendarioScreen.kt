@@ -59,18 +59,17 @@ import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.daysOfWeek
 import kotlinx.coroutines.launch
 // --- MUDANÇAS DE IMPORTAÇÃO ---
-import kotlinx.datetime.Instant
+import kotlinx.datetime.Instant // Usado para converter o Long do Firebase
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toJavaLocalDate // Importação para conversão
+import kotlinx.datetime.toJavaLocalDate // Usado para CONVERTER para java.time
 import kotlinx.datetime.toLocalDateTime
 import java.text.SimpleDateFormat
-import java.time.LocalDate // MUDANÇA: Usando java.time
+import java.time.LocalDate // MUDANÇA: AGORA SÓ USAMOS ESTE LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 
-// Esta é a nova tela principal, reescrita para a biblioteca "kizitonwose"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
@@ -117,10 +116,10 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
     // --- MUDANÇA NA OBTENÇÃO DA DATA ---
     // 4. Configuração do estado do calendário (nova biblioteca)
     val today = LocalDate.now() // Usa java.time.LocalDate.now()
-    val currentMonth = YearMonth.from(today) // Não precisa mais de .toJavaLocalDate()
-    val startMonth = currentMonth.minusMonths(100) // 100 meses no passado
-    val endMonth = currentMonth.plusMonths(100)   // 100 meses no futuro
-    val firstDayOfWeek = daysOfWeek().first() // Começa na Segunda (padrão)
+    val currentMonth = YearMonth.from(today)
+    val startMonth = currentMonth.minusMonths(100)
+    val endMonth = currentMonth.plusMonths(100)
+    val firstDayOfWeek = daysOfWeek().first()
 
     val calendarState = rememberCalendarState(
         startMonth = startMonth,
@@ -136,6 +135,7 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 actions = {
                     IconButton(onClick = {
                         Firebase.auth.signOut()
+                        // CORREÇÃO: Navega de volta ao Login ao sair
                         navController.navigate(Screen.Login.route) {
                             popUpTo(Screen.Calendario.route) { inclusive = true }
                         }
@@ -158,10 +158,8 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 5. O Calendário Horizontal
             HorizontalCalendar(
                 state = calendarState,
-                // Cabeçalho (Nome do Mês, Setas)
                 monthHeader = { month ->
                     MonthHeader(
                         month = month,
@@ -177,15 +175,12 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                         }
                     )
                 },
-                // Conteúdo do Dia (O número)
                 dayContent = { day ->
                     DayContent(
                         day = day,
-                        // 'day.date' é java.time.LocalDate, 'selection' agora também é
                         isSelected = selection == day.date,
                         temEvento = diasComEvento.contains(day.date)
                     ) { clickedDay ->
-                        // A atribuição agora funciona
                         selection = if (selection == clickedDay.date) null else clickedDay.date
                     }
                 }
@@ -206,10 +201,9 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
             )
 
-            // 6. Lista de Eventos (agora sem ambiguidade)
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(eventosDoDiaSelecionado) { evento ->
-                    // Esta chamada agora usa inequivocamente a EventoItem abaixo
+                    // Esta chamada agora usa a EventoItem deste ficheiro
                     EventoItem(evento = evento, onClick = {
                         evento.id?.let { id ->
                             navController.navigate(Screen.DetalheEvento.createRoute(id))
@@ -221,7 +215,7 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
     }
 }
 
-// Composable para o dia (reescrito para a nova biblioteca)
+// Composable para o dia
 @Composable
 fun DayContent(
     day: CalendarDay,
@@ -229,11 +223,10 @@ fun DayContent(
     temEvento: Boolean,
     onClick: (CalendarDay) -> Unit
 ) {
-    // Só desenha se for um dia do mês atual
     if (day.position == DayPosition.MonthDate) {
         Box(
             modifier = Modifier
-                .aspectRatio(1f) // Faz o dia ser um quadrado
+                .aspectRatio(1f)
                 .padding(2.dp)
                 .clip(CircleShape)
                 .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent)
@@ -245,7 +238,6 @@ fun DayContent(
                     text = day.date.dayOfMonth.toString(),
                     color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onBackground
                 )
-                // Marcador de evento
                 if (temEvento) {
                     Box(
                         modifier = Modifier
@@ -254,14 +246,14 @@ fun DayContent(
                             .background(if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary)
                     )
                 } else {
-                    Spacer(modifier = Modifier.size(4.dp)) // Espaço vazio para alinhar
+                    Spacer(modifier = Modifier.size(4.dp))
                 }
             }
         }
     }
 }
 
-// Composable para o cabeçalho do mês (novo)
+// Composable para o cabeçalho do mês
 @Composable
 fun MonthHeader(
     month: CalendarMonth,
@@ -294,7 +286,7 @@ fun MonthHeader(
     }
 }
 
-// --- ESTA FUNÇÃO PERMANECE AQUI ---
+// --- ESTA FUNÇÃO É A ÚNICA FONTE ---
 // Ela será usada por CalendarioScreen e importada por ListaEventosScreen
 @Composable
 fun EventoItem(evento: EventoCalendario, onClick: () -> Unit) {
