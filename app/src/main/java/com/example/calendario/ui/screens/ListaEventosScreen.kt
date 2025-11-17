@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,8 +28,7 @@ import androidx.navigation.NavController
 import com.example.calendario.model.EventoCalendario
 import com.example.calendario.ui.Screen
 import com.example.calendario.viewmodel.EventoViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+// Imports do Firebase.auth e FAB foram removidos
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -45,29 +42,19 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Meus Eventos") },
-                // --- BOTÃO DE SAIR ADICIONADO ---
-                actions = {
-                    IconButton(onClick = {
-                        Firebase.auth.signOut() // Faz o logout
-                        // Navega para o Login e limpa a pilha
-                        navController.navigate(Screen.Login.route) {
-                            popUpTo(Screen.ListaEventos.route) { inclusive = true }
-                        }
-                    }) {
-                        Icon(Icons.AutoMirrored.Filled.ExitToApp, "Sair")
+                title = { Text("Todos os Eventos") },
+                // --- BOTÃO DE SAIR REMOVIDO ---
+                // --- ADICIONADO BOTÃO DE VOLTAR ---
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar")
                     }
                 }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                // Navega para a tela de criação (sem ID)
-                navController.navigate(Screen.CriarEvento.createRoute(null))
-            }) {
-                Icon(Icons.Default.Add, contentDescription = "Adicionar Evento")
-            }
-        }
+        // --- BOTÃO DE ADICIONAR (FAB) REMOVIDO ---
+        // Ele agora vive na CalendarioScreen
+        floatingActionButton = {}
     ) { paddingValues ->
         Box(modifier = Modifier
             .fillMaxSize()
@@ -89,6 +76,12 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
     }
 }
 
+/*
+   A função EventoItem() foi movida para o arquivo CalendarioScreen.kt,
+   mas não há problema em mantê-la aqui também se esta tela ainda a utiliza.
+   Para um projeto maior, nós a moveríamos para um arquivo "common" (comum),
+   mas para "Ctrl+V" é mais seguro deixá-la aqui E copiá-la para a CalendarioScreen.
+*/
 @Composable
 fun EventoItem(evento: EventoCalendario, onClick: () -> Unit) {
     val dataFormatada = remember(evento.data) {

@@ -3,9 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     alias(libs.plugins.compose.compiler)
-    // ERRO CORRIGIDO: O plugin do Compose foi removido daqui. O buildFeatures { compose = true } já cuida disso de forma mais moderna.
-
-    // Plugin do Google Services para conectar com o Firebase
+    // ERRO CORRIGIDO: O plugin do Compose foi removido daqui.
+// Plugin do Google Services para conectar com o Firebase
     id("com.google.gms.google-services")
 }
 
@@ -18,6 +17,7 @@ android {
         minSdk = 24
         targetSdk = 36 // Se 36 estiver dando erro, use 34
         versionCode = 1
+
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -28,6 +28,7 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
+
             )
         }
     }
@@ -40,6 +41,7 @@ android {
         // CORREÇÃO: "17" correspondente ao Java 17
         jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
     }
@@ -55,13 +57,17 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     implementation("com.google.firebase:firebase-firestore-ktx")
-
-
     implementation("com.google.firebase:firebase-auth-ktx")
+
+    // --- DEPENDÊNCIAS DO CALENDÁRIO CORRIGIDAS ---
+    // O groupId mudou (inclui 'composecalendar') e o artifactId mudou (sem hífen)
+    implementation("io.github.boguszpawlowski.composecalendar:composecalendar:1.3.1")
+    implementation("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.3.1")
 
 
     // Dependências padrão do AndroidX e Compose
     implementation(libs.androidx.core.ktx) // <--- Sem duplicata
+
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
