@@ -14,16 +14,16 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // --- CORREÇÃO DO CRASH (MANTER ISTO) ---
-        // Esta linha inicializa o Firebase e corrige o crash do login.
+        // --- CORREÇÃO DO CRASH (LINHA MAIS IMPORTANTE) ---
+        // Esta linha inicializa o Firebase usando o contexto
+        // da sua aplicação. Isto corrige o 'NullPointerException'
+        // em QUALQUER sítio que use 'Firebase.auth' ou 'Firebase.firestore'.
         Firebase.initialize(this)
 
         enableEdgeToEdge()
         setContent {
             CalendarioTheme {
-                // --- CORREÇÃO DO AVISO (SCAFFOLD REMOVIDO) ---
-                // Removemos o Scaffold desnecessário que estava aqui.
-                // O AppNavigation gere os Scaffolds de cada ecrã.
+                // Removemos o Scaffold desnecessário que causava o "aviso"
                 AppNavigation()
             }
         }

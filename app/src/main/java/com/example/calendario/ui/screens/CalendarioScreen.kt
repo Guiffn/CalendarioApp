@@ -63,6 +63,7 @@ import kotlinx.datetime.Instant // Usado para converter o Long do Firebase
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toJavaLocalDate // Usado para CONVERTER para java.time
 import kotlinx.datetime.toLocalDateTime
+// A importação "kotlinx.datetime.LocalDate" foi REMOVIDA
 import java.text.SimpleDateFormat
 import java.time.LocalDate // MUDANÇA: AGORA SÓ USAMOS ESTE LocalDate
 import java.time.YearMonth
@@ -134,7 +135,10 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
                 title = { Text("Meu Calendário") },
                 actions = {
                     IconButton(onClick = {
-                        Firebase.auth.signOut()
+                        // Como removemos a lógica de login,
+                        // também removemos a de signOut para evitar outro crash.
+                        // Firebase.auth.signOut() <-- REMOVIDO
+
                         // CORREÇÃO: Navega de volta ao Login ao sair
                         navController.navigate(Screen.Login.route) {
                             popUpTo(Screen.Calendario.route) { inclusive = true }
