@@ -40,7 +40,12 @@ fun AppNavigation() {
     // Instância única do ViewModel compartilhada entre as telas
     val eventoViewModel: EventoViewModel = viewModel()
 
-    // --- LÓGICA DE LOGIN MODIFICADA ---
+    // --- MUDANÇA PRINCIPAL (TESTE DE DEBUG) ---
+    // Nós vamos forçar o app a começar DIRETAMENTE na tela do Calendário.
+    val startDestination = Screen.Calendario.route
+
+    /*
+    // --- CÓDIGO ORIGINAL (DESATIVADO TEMPORARIAMENTE) ---
     // Decide qual tela mostrar primeiro
     val startDestination = if (Firebase.auth.currentUser != null) {
         // --- MUDANÇA AQUI: A nova tela principal é o Calendário
@@ -48,6 +53,8 @@ fun AppNavigation() {
     } else {
         Screen.Login.route
     }
+    */
+    // --- FIM DA MUDANÇA ---
 
     NavHost(navController = navController, startDestination = startDestination) {
 

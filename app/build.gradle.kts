@@ -3,7 +3,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     alias(libs.plugins.compose.compiler)
-    // ERRO CORRIGIDO: O plugin do Compose foi removido daqui.
 // Plugin do Google Services para conectar com o Firebase
     id("com.google.gms.google-services")
 }
@@ -14,7 +13,11 @@ android {
 
     defaultConfig {
         applicationId = "com.example.calendario"
+
+        // --- MUDANÇA ---
+        // Voltámos ao 24, pois vamos usar o "Desugaring"
         minSdk = 24
+
         targetSdk = 36 // Se 36 estiver dando erro, use 34
         versionCode = 1
 
@@ -41,7 +44,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
 
-        // --- ADICIONE ESTA LINHA PARA CORRIGIR O ERRO ---
+        // --- MUDANÇA: RE-ADICIONADO ---
+        // A nova biblioteca também precisa disto
         isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
@@ -62,9 +66,9 @@ android {
 
 
 dependencies {
-    // --- ADICIONE ESTA LINHA PARA CORRIGIR O ERRO ---
 
-    // Esta é a biblioteca que faz o "Desugaring"
+    // --- MUDANÇA: RE-ADICIONADO ---
+    // A biblioteca que faz o "Desugaring"
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // BOM do Firebase para gerenciar versões
@@ -73,9 +77,13 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // --- NOVA BIBLIOTECA DE CALENDÁRIO (Kizitonwose) ---
-    implementation("com.kizitonwose.calendar:compose:2.5.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+    // --- MUDANÇA: BIBLIOTECA ANTIGA REMOVIDA ---
+    // implementation("com.kizitonwose.calendar:compose:2.5.1")
+    // implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
+
+    // --- MUDANÇA: NOVA BIBLIOTECA ADICIONADA ---
+    // Vamos usar a versão 'kotlinx-datetime' desta biblioteca para evitar o java.time
+    implementation("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.1.0")
 
 
     // Dependências padrão do AndroidX e Compose
