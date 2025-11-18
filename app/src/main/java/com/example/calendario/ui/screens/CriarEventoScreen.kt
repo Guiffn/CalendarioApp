@@ -53,7 +53,8 @@ import java.util.TimeZone
 fun CriarEventoScreen(
     navController: NavController,
     viewModel: EventoViewModel,
-    eventoId: String?
+    eventoId: String?,
+    dataSelecionada: Long?
 ) {
     val isEditing = eventoId != null
     var eventoToEdit by remember { mutableStateOf<EventoCalendario?>(null) }
@@ -61,7 +62,10 @@ fun CriarEventoScreen(
     var titulo by rememberSaveable { mutableStateOf("") }
     var tipo by rememberSaveable { mutableStateOf("GERAL") }
     var detalhesExtras by rememberSaveable { mutableStateOf("") }
-    var selectedDateMillis by rememberSaveable { mutableStateOf<Long?>(System.currentTimeMillis()) }
+
+    // --- LÓGICA DA DATA ATUALIZADA ---
+    val dataInicial = dataSelecionada ?: System.currentTimeMillis()
+    var selectedDateMillis by rememberSaveable { mutableStateOf<Long?>(dataInicial) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -114,7 +118,6 @@ fun CriarEventoScreen(
                 TextButton(onClick = {
                     showDatePicker = false
                     datePickerState.selectedDateMillis?.let {
-                        // O DatePicker retorna a data em UTC. Ajustamos para o fuso local para não pegar o dia anterior.
                         val calendarUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = it }
                         val calendarLocal = Calendar.getInstance()
                         calendarLocal.set(
@@ -124,7 +127,7 @@ fun CriarEventoScreen(
                         )
                         selectedDateMillis = calendarLocal.timeInMillis
                     }
-                    showTimePicker = true // Abre o seletor de hora
+                    showTimePicker = true 
                 }) { Text("OK") }
             },
             dismissButton = {
@@ -246,7 +249,7 @@ fun CriarEventoScreen(
             Spacer(Modifier.height(16.dp))
 
             Button(
-                enabled = selectedDateMillis != null, // Botão desabilitado se não houver data
+                enabled = selectedDateMillis != null, 
                 onClick = {
                     selectedDateMillis?.let { dataFinal ->
                         if (isEditing) {
@@ -271,10 +274,10 @@ fun CriarEventoScreen(
                                     this.titulo = titulo
                                     this.data = dataFinal
                                 }
-                                else -> EventoCalendario(
-                                    titulo = titulo,
-                                    data = dataFinal
-                                )
+                                else -> EventoCalendario().apply {
+                                    this.titulo = titulo
+                                    this.data = dataFinal
+                                }
                             }
                             viewModel.adicionarEvento(novoEvento)
                         }

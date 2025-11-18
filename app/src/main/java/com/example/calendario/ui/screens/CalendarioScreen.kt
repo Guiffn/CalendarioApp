@@ -65,7 +65,8 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
         },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                navController.navigate(Screen.CriarEvento.createRoute(null))
+                // --- NAVEGAÇÃO ATUALIZADA ---
+                navController.navigate(Screen.CriarEvento.createRoute(selectedDateMillis, null))
             }) {
                 Icon(Icons.Default.Add, contentDescription = "Adicionar Evento")
             }

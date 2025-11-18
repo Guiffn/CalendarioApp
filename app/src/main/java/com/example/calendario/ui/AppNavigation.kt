@@ -10,20 +10,18 @@ import androidx.navigation.navArgument
 import com.example.calendario.ui.screens.CalendarioScreen
 import com.example.calendario.ui.screens.CriarEventoScreen
 import com.example.calendario.ui.screens.DetalheEventoScreen
-import com.example.calendario.ui.screens.ListaEventosScreen
-import com.example.calendario.ui.screens.SettingsScreen // <- IMPORT ADICIONADO
+import com.example.calendario.ui.screens.SettingsScreen
 import com.example.calendario.viewmodel.EventoViewModel
 
 sealed class Screen(val route: String) {
-    object Login : Screen("login")
     object Calendario : Screen("calendario")
-    object Settings : Screen("settings") // <- ROTA ADICIONADA
-    object ListaEventos : Screen("lista_eventos")
+    object Settings : Screen("settings")
     object DetalheEvento : Screen("detalhe_evento/{eventoId}") {
         fun createRoute(eventoId: String) = "detalhe_evento/$eventoId"
     }
-    object CriarEvento : Screen("criar_evento?eventoId={eventoId}") {
-        fun createRoute(eventoId: String?) = "criar_evento?eventoId=$eventoId"
+    // --- ROTA ATUALIZADA ---
+    object CriarEvento : Screen("criar_evento?dataSelecionada={dataSelecionada}&eventoId={eventoId}") {
+        fun createRoute(dataSelecionada: Long, eventoId: String?) = "criar_evento?dataSelecionada=$dataSelecionada&eventoId=$eventoId"
     }
 }
 
@@ -34,7 +32,6 @@ fun AppNavigation() {
     val startDestination = Screen.Calendario.route
 
     NavHost(navController = navController, startDestination = startDestination) {
-
 
         composable(Screen.Calendario.route) {
             CalendarioScreen(
@@ -50,26 +47,29 @@ fun AppNavigation() {
             )
         }
 
-        composable(Screen.ListaEventos.route) {
-            ListaEventosScreen(
-                navController = navController,
-                viewModel = eventoViewModel
-            )
-        }
-
         composable(
             route = Screen.CriarEvento.route,
-            arguments = listOf(navArgument("eventoId") {
-                type = NavType.StringType
-                nullable = true
-                defaultValue = null
-            })
+            // --- ARGUMENTOS ATUALIZADOS ---
+            arguments = listOf(
+                navArgument("dataSelecionada") {
+                    type = NavType.LongType
+                    defaultValue = -1L // Valor padrão, caso nenhuma data seja passada
+                },
+                navArgument("eventoId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                }
+            )
         ) { backStackEntry ->
             val eventoId = backStackEntry.arguments?.getString("eventoId")
+            val dataSelecionada = backStackEntry.arguments?.getLong("dataSelecionada")
             CriarEventoScreen(
                 navController = navController,
                 viewModel = eventoViewModel,
-                eventoId = eventoId
+                eventoId = eventoId,
+                // --- NOVO PARÂMETRO ---
+                dataSelecionada = if (dataSelecionada == -1L) null else dataSelecionada
             )
         }
 
