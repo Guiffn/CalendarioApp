@@ -44,33 +44,46 @@ import com.example.calendario.model.EventoReuniao
 import com.example.calendario.viewmodel.EventoViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CriarEventoScreen(
     navController: NavController,
     viewModel: EventoViewModel,
-    eventoId: String? // --- PARÂMETRO ADICIONADO ---
+    eventoId: String?
 ) {
-
-    // --- LÓGICA DE EDIÇÃO ADICIONADA ---
     val isEditing = eventoId != null
     var eventoToEdit by remember { mutableStateOf<EventoCalendario?>(null) }
 
-    // Campos de estado
     var titulo by rememberSaveable { mutableStateOf("") }
     var tipo by rememberSaveable { mutableStateOf("GERAL") }
     var detalhesExtras by rememberSaveable { mutableStateOf("") }
-    var selectedDateMillis by rememberSaveable { mutableStateOf(System.currentTimeMillis()) }
+    var selectedDateMillis by rememberSaveable { mutableStateOf<Long?>(System.currentTimeMillis()) }
 
-    // Busca o evento se estiver editando
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    // --- A SOLUÇÃO FINAL E CORRETA ---
+    // Recria o estado do DatePicker com a data inicial correta.
+    // Usar 'remember' com uma 'key' (selectedDateMillis) garante que o estado
+    // só será recriado quando a data inicial realmente mudar (ao entrar no modo de edição),
+    // e NÃO a cada recomposição, o que evita que o calendário trave.
+    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
+    // ---------------------------------
+
+    val timePickerState = rememberTimePickerState(is24Hour = true)
+
+    // Busca o evento para edição (só na primeira vez)
     LaunchedEffect(eventoId) {
         if (isEditing) {
             eventoToEdit = viewModel.buscarEventoPorId(eventoId!!)
             eventoToEdit?.let { evento ->
                 titulo = evento.titulo
                 tipo = evento.tipo
+                // Esta linha vai fazer o `remember` acima recriar o datePickerState com a data certa.
                 selectedDateMillis = evento.data
                 detalhesExtras = when (evento) {
                     is EventoAniversario -> evento.aniversariante
@@ -80,27 +93,23 @@ fun CriarEventoScreen(
             }
         }
     }
-    // --- FIM DA LÓGICA DE EDIÇÃO ---
 
-    // --- Lógica do Date/Time Picker (Tarefa Pessoa 3) ---
-    val calendar = Calendar.getInstance().apply { timeInMillis = selectedDateMillis }
-    var selectedHour by rememberSaveable(selectedDateMillis) { mutableStateOf(calendar.get(Calendar.HOUR_OF_DAY)) }
-    var selectedMinute by rememberSaveable(selectedDateMillis) { mutableStateOf(calendar.get(Calendar.MINUTE)) }
-
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
-    val timePickerState = rememberTimePickerState(
-        initialHour = selectedHour,
-        initialMinute = selectedMinute,
-        is24Hour = true
-    )
+    // Sincroniza a HORA do TimePicker quando ele for aberto
+    LaunchedEffect(showTimePicker) {
+        if (showTimePicker) {
+            val cal = Calendar.getInstance().apply {
+                timeInMillis = selectedDateMillis ?: System.currentTimeMillis()
+            }
+            timePickerState.hour = cal.get(Calendar.HOUR_OF_DAY)
+            timePickerState.minute = cal.get(Calendar.MINUTE)
+        }
+    }
 
     val dateTimeFormatter = remember(selectedDateMillis) {
-        val cal = Calendar.getInstance()
-        cal.timeInMillis = selectedDateMillis
-        SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(cal.time)
+        selectedDateMillis?.let {
+            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            sdf.format(Date(it))
+        } ?: "Selecione a data"
     }
 
     val tiposDeEvento = listOf("GERAL", "ANIVERSARIO", "REUNIAO")
@@ -112,16 +121,25 @@ fun CriarEventoScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showDatePicker = false
-                    selectedDateMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
-                    showTimePicker = true
+                    // Pega a data que o usuário SELECIONOU no calendário
+                    datePickerState.selectedDateMillis?.let {
+                        // O DatePicker retorna a data em UTC. Ajustamos para o fuso local para não pegar o dia anterior.
+                        val calendarUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = it }
+                        val calendarLocal = Calendar.getInstance()
+                        calendarLocal.set(
+                            calendarUtc.get(Calendar.YEAR),
+                            calendarUtc.get(Calendar.MONTH),
+                            calendarUtc.get(Calendar.DAY_OF_MONTH)
+                        )
+                        selectedDateMillis = calendarLocal.timeInMillis
+                    }
+                    showTimePicker = true // Abre o seletor de hora
                 }) { Text("OK") }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
             }
         ) {
-            // --- CORREÇÃO AQUI ---
-            // O 'state' já contém a data inicial, não precisa passar de novo.
             DatePicker(state = datePickerState)
         }
     }
@@ -134,8 +152,9 @@ fun CriarEventoScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showTimePicker = false
-                    val cal = Calendar.getInstance()
-                    cal.timeInMillis = selectedDateMillis
+                    val cal = Calendar.getInstance().apply {
+                        timeInMillis = selectedDateMillis ?: System.currentTimeMillis()
+                    }
                     cal.set(Calendar.HOUR_OF_DAY, timePickerState.hour)
                     cal.set(Calendar.MINUTE, timePickerState.minute)
                     selectedDateMillis = cal.timeInMillis
@@ -150,7 +169,6 @@ fun CriarEventoScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                // Título dinâmico
                 title = { Text(if (isEditing) "Editar Evento" else "Criar Novo Evento") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -237,45 +255,43 @@ fun CriarEventoScreen(
             Spacer(Modifier.height(16.dp))
 
             Button(
+                enabled = selectedDateMillis != null, // Botão desabilitado se não houver data
                 onClick = {
-                    val dataFinal = selectedDateMillis
-                    // --- LÓGICA DE SALVAR/ATUALIZAR ---
-                    if (isEditing) {
-                        // Atualiza o objeto existente
-                        eventoToEdit?.apply {
-                            this.titulo = titulo
-                            this.data = dataFinal
-                            this.tipo = tipo
-                            when (this) {
-                                is EventoAniversario -> this.aniversariante = detalhesExtras
-                                is EventoReuniao -> this.local = detalhesExtras
-                            }
-                        }?.let {
-                            viewModel.atualizarEvento(it) // <-- Agora funciona
-                        }
-                    } else {
-                        // Cria um novo objeto
-                        val novoEvento = when (tipo) {
-                            "ANIVERSARIO" -> EventoAniversario(aniversariante = detalhesExtras).apply {
+                    selectedDateMillis?.let { dataFinal ->
+                        if (isEditing) {
+                            eventoToEdit?.apply {
                                 this.titulo = titulo
                                 this.data = dataFinal
+                                this.tipo = tipo
+                                when (this) {
+                                    is EventoAniversario -> this.aniversariante = detalhesExtras
+                                    is EventoReuniao -> this.local = detalhesExtras
+                                }
+                            }?.let {
+                                viewModel.atualizarEvento(it)
                             }
-                            "REUNIAO" -> EventoReuniao(local = detalhesExtras, participantes = listOf("Eu")).apply {
-                                this.titulo = titulo
-                                this.data = dataFinal
+                        } else {
+                            val novoEvento = when (tipo) {
+                                "ANIVERSARIO" -> EventoAniversario(aniversariante = detalhesExtras).apply {
+                                    this.titulo = titulo
+                                    this.data = dataFinal
+                                }
+                                "REUNIAO" -> EventoReuniao(local = detalhesExtras, participantes = listOf("Eu")).apply {
+                                    this.titulo = titulo
+                                    this.data = dataFinal
+                                }
+                                else -> EventoCalendario(
+                                    titulo = titulo,
+                                    data = dataFinal
+                                )
                             }
-                            else -> com.example.calendario.model.EventoCalendario(
-                                titulo = titulo,
-                                data = dataFinal
-                            )
+                            viewModel.adicionarEvento(novoEvento)
                         }
-                        viewModel.adicionarEvento(novoEvento)
+                        navController.popBackStack()
                     }
-                    navController.popBackStack() // Volta para a lista (ou detalhes)
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                // Texto do botão dinâmico
                 Text(if (isEditing) "Atualizar Evento" else "Salvar Evento")
             }
         }

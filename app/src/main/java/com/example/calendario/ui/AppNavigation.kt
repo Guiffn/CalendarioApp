@@ -2,27 +2,22 @@ package com.example.calendario.ui
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-// --- IMPORTAÇÃO ADICIONADA ---
 import com.example.calendario.ui.screens.CalendarioScreen
 import com.example.calendario.ui.screens.CriarEventoScreen
 import com.example.calendario.ui.screens.DetalheEventoScreen
 import com.example.calendario.ui.screens.ListaEventosScreen
-import com.example.calendario.ui.screens.LoginScreen
+import com.example.calendario.ui.screens.SettingsScreen // <- IMPORT ADICIONADO
 import com.example.calendario.viewmodel.EventoViewModel
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 
-// 1. Definir as rotas (telas)
 sealed class Screen(val route: String) {
     object Login : Screen("login")
-    // --- ROTA ADICIONADA ---
     object Calendario : Screen("calendario")
+    object Settings : Screen("settings") // <- ROTA ADICIONADA
     object ListaEventos : Screen("lista_eventos")
     object DetalheEvento : Screen("detalhe_evento/{eventoId}") {
         fun createRoute(eventoId: String) = "detalhe_evento/$eventoId"
@@ -32,28 +27,14 @@ sealed class Screen(val route: String) {
     }
 }
 
-
-// 2. Configurar o NavHost (Navigation Controller)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    // Instância única do ViewModel compartilhada entre as telas
     val eventoViewModel: EventoViewModel = viewModel()
-
-    // --- CÓDIGO RESTAURADO ---
-    // Decide qual tela mostrar primeiro
-    val startDestination = if (Firebase.auth.currentUser != null) {
-        Screen.Calendario.route
-    } else {
-        Screen.Login.route
-    }
-    // --- FIM DA RESTAURAÇÃO ---
+    val startDestination = Screen.Calendario.route
 
     NavHost(navController = navController, startDestination = startDestination) {
 
-        composable(Screen.Login.route) {
-            LoginScreen(navController = navController)
-        }
 
         composable(Screen.Calendario.route) {
             CalendarioScreen(
@@ -62,7 +43,14 @@ fun AppNavigation() {
             )
         }
 
-        // Rota para a Tela de Lista
+        // --- COMPOSABLE DA NOVA TELA ADICIONADO ---
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                navController = navController,
+                viewModel = eventoViewModel
+            )
+        }
+
         composable(Screen.ListaEventos.route) {
             ListaEventosScreen(
                 navController = navController,
@@ -70,7 +58,6 @@ fun AppNavigation() {
             )
         }
 
-        // Rota para a Tela de Criar/Editar
         composable(
             route = Screen.CriarEvento.route,
             arguments = listOf(navArgument("eventoId") {
@@ -87,7 +74,6 @@ fun AppNavigation() {
             )
         }
 
-        // Rota para a Tela de Detalhes
         composable(
             route = Screen.DetalheEvento.route,
             arguments = listOf(navArgument("eventoId") { type = NavType.StringType })

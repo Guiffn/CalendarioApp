@@ -1,9 +1,9 @@
 package com.example.calendario.viewmodel
 
+import androidx.compose.foundation.gestures.forEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.calendario.model.EventoCalendario
-// ... (outros imports)
 import com.example.calendario.repository.EventoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +20,7 @@ class EventoViewModel : ViewModel() {
         carregarEventos()
     }
 
-    fun carregarEventos() {
+    private fun carregarEventos() {
         viewModelScope.launch {
             _eventos.value = repository.buscarTodosEventos()
         }
@@ -37,7 +37,6 @@ class EventoViewModel : ViewModel() {
         }
     }
 
-    // --- ADICIONE ESTA FUNÇÃO ---
     fun atualizarEvento(evento: EventoCalendario) {
         viewModelScope.launch {
             repository.atualizarEvento(evento)
@@ -45,11 +44,26 @@ class EventoViewModel : ViewModel() {
         }
     }
 
-    // --- ADICIONE ESTA TAMBÉM (você vai precisar dela na tela de detalhes) ---
     fun deletarEvento(eventoId: String) {
         viewModelScope.launch {
             repository.deletarEvento(eventoId)
             carregarEventos() // Recarrega a lista
+        }
+    }
+
+    // --- FUNÇÃO CORRIGIDA ---
+    fun deletarTodosEventos() {
+        viewModelScope.launch {
+            // Pega a lista atual de eventos
+            val todosEventos = _eventos.value
+
+            // Itera sobre cada evento e solicita a exclusão no repositório
+            todosEventos.forEach { evento ->
+                evento.id?.let { repository.deletarEvento(it) }
+            }
+
+            // Após deletar todos, recarrega a lista (que agora estará vazia)
+            carregarEventos()
         }
     }
 }
