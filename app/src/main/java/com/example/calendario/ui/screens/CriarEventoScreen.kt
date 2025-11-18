@@ -66,24 +66,17 @@ fun CriarEventoScreen(
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
-    // --- A SOLUÇÃO FINAL E CORRETA ---
-    // Recria o estado do DatePicker com a data inicial correta.
-    // Usar 'remember' com uma 'key' (selectedDateMillis) garante que o estado
-    // só será recriado quando a data inicial realmente mudar (ao entrar no modo de edição),
-    // e NÃO a cada recomposição, o que evita que o calendário trave.
+
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = selectedDateMillis)
-    // ---------------------------------
 
     val timePickerState = rememberTimePickerState(is24Hour = true)
 
-    // Busca o evento para edição (só na primeira vez)
     LaunchedEffect(eventoId) {
         if (isEditing) {
             eventoToEdit = viewModel.buscarEventoPorId(eventoId!!)
             eventoToEdit?.let { evento ->
                 titulo = evento.titulo
                 tipo = evento.tipo
-                // Esta linha vai fazer o `remember` acima recriar o datePickerState com a data certa.
                 selectedDateMillis = evento.data
                 detalhesExtras = when (evento) {
                     is EventoAniversario -> evento.aniversariante
@@ -94,7 +87,6 @@ fun CriarEventoScreen(
         }
     }
 
-    // Sincroniza a HORA do TimePicker quando ele for aberto
     LaunchedEffect(showTimePicker) {
         if (showTimePicker) {
             val cal = Calendar.getInstance().apply {
@@ -121,7 +113,6 @@ fun CriarEventoScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showDatePicker = false
-                    // Pega a data que o usuário SELECIONOU no calendário
                     datePickerState.selectedDateMillis?.let {
                         // O DatePicker retorna a data em UTC. Ajustamos para o fuso local para não pegar o dia anterior.
                         val calendarUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = it }

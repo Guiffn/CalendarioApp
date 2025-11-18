@@ -50,7 +50,6 @@ fun DetalheEventoScreen(
 ) {
     var evento by remember { mutableStateOf<EventoCalendario?>(null) }
 
-    // Busca o evento no ViewModel quando o eventoId mudar
     LaunchedEffect(eventoId) {
         if (eventoId != null) {
             evento = viewModel.buscarEventoPorId(eventoId)
@@ -69,7 +68,6 @@ fun DetalheEventoScreen(
             )
         }
     ) { paddingValues ->
-        // --- MUDANÇA AQUI: Box permite alinhar os botões na parte inferior ---
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -80,18 +78,13 @@ fun DetalheEventoScreen(
                 if (evento == null) {
                     Text("Evento não encontrado ou carregando...")
                 } else {
-                    // Exibe detalhes com base no tipo (Polimorfismo)
                     DetalheConteudo(evento!!)
 
-                    // --- MUDANÇA AQUI: Empurra os botões para baixo ---
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // --- BOTÕES ADICIONADOS ---
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        // Botão Editar
                         Button(
                             onClick = {
-                                // Navega para a tela de criação/edição com o ID
                                 navController.navigate(Screen.CriarEvento.createRoute(evento?.id))
                             },
                             modifier = Modifier.weight(1f)
@@ -103,7 +96,6 @@ fun DetalheEventoScreen(
 
                         Spacer(modifier = Modifier.width(16.dp))
 
-                        // Botão Excluir
                         Button(
                             onClick = {
                                 // Deleta o evento e volta para a lista
@@ -137,10 +129,8 @@ fun DetalheConteudo(evento: EventoCalendario) {
     Text(text = "Data: $dataFormatada", style = MaterialTheme.typography.bodyMedium)
     Text(text = "Tipo: ${evento.tipo}", style = MaterialTheme.typography.bodyMedium)
 
-    // Usa o polimorfismo para mostrar detalhes específicos
     Text(text = "Detalhes: ${evento.exibirDetalhes()}", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 16.dp))
 
-    // Mostra campos extras se for um tipo específico
     when (evento) {
         is EventoAniversario -> {
             Text("Aniversariante: ${evento.aniversariante}", style = MaterialTheme.typography.bodyMedium)
@@ -151,5 +141,4 @@ fun DetalheConteudo(evento: EventoCalendario) {
         }
     }
 
-    // O 'TODO' original foi removido pois os botões foram adicionados.
 }

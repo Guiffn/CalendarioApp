@@ -14,16 +14,12 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // --- CORREÇÃO DO CRASH (LINHA MAIS IMPORTANTE) ---
-        // Esta linha inicializa o Firebase usando o contexto
-        // da sua aplicação. Isto corrige o 'NullPointerException'
-        // em QUALQUER sítio que use 'Firebase.auth' ou 'Firebase.firestore'.
+
         Firebase.initialize(this)
 
         enableEdgeToEdge()
         setContent {
             CalendarioTheme {
-                // Removemos o Scaffold desnecessário que causava o "aviso"
                 AppNavigation()
             }
         }

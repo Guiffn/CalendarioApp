@@ -3,18 +3,17 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     alias(libs.plugins.compose.compiler)
-// Plugin do Google Services para conectar com o Firebase
     id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.calendario"
-    compileSdk = 36 // Se 36 estiver dando erro, use 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.calendario"
-        minSdk = 24 // Pode voltar ao 24, já não importa
-        targetSdk = 36 // Se 36 estiver dando erro, use 34
+        minSdk = 24
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -33,9 +32,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
 
-        // --- MUDANÇA: REMOVIDO ---
-        // Já não precisamos disto. Esta era a causa do erro.
-        // isCoreLibraryDesugaringEnabled = false (ou removido)
+
     }
     kotlinOptions {
         jvmTarget = "17"
@@ -53,21 +50,16 @@ android {
 
 dependencies {
 
-    // --- MUDANÇA: REMOVIDO ---
-    // Já não precisamos disto.
-    // coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
-    // BOM do Firebase
+
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-auth-ktx")
 
-    // --- MUDANÇA: BIBLIOTECAS DO CALENDÁRIO REMOVIDAS ---
-    // implementation("com.kizitonwose.calendar:compose:2.5.1")
-    // implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
 
 
-    // Dependências Padrão (Tudo o que precisamos)
+
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

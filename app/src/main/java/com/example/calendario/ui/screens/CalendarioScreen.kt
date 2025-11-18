@@ -27,9 +27,7 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
 
     val datePickerState = rememberDatePickerState()
 
-    // --- CORREÇÃO DE FUSO HORÁRIO AQUI ---
     val selectedDateMillis = datePickerState.selectedDateMillis?.let {
-        // O DatePicker retorna a data em UTC. Convertemos para o início do dia no fuso local.
         val calendarUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         calendarUtc.timeInMillis = it
 
@@ -41,9 +39,7 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
         )
         calendarLocal.timeInMillis
     } ?: System.currentTimeMillis()
-    // --- FIM DA CORREÇÃO ---
 
-    // Filtra os eventos para mostrar apenas os do dia selecionado
     val eventosDoDia = remember(selectedDateMillis, eventos) {
         val calSelecionado = Calendar.getInstance().apply { timeInMillis = selectedDateMillis }
         eventos.filter { evento ->
@@ -116,7 +112,6 @@ fun CalendarioScreen(navController: NavController, viewModel: EventoViewModel) {
     }
 }
 
-// O EventoItem não precisa de mudanças.
 @Composable
 fun EventoItem(evento: EventoCalendario, onClick: () -> Unit) {
     val dataFormatada = remember(evento.data) {

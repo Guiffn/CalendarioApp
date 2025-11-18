@@ -43,7 +43,6 @@ fun AppNavigation() {
             )
         }
 
-        // --- COMPOSABLE DA NOVA TELA ADICIONADO ---
         composable(Screen.Settings.route) {
             SettingsScreen(
                 navController = navController,

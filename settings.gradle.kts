@@ -18,7 +18,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // Certifique-se de que NÃO HÁ NADA AQUI além de google() e mavenCentral()
     }
 }
 

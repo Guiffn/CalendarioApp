@@ -20,7 +20,6 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.example.calendario.ui.Screen
 import com.example.calendario.viewmodel.EventoViewModel
-// Várias importações desnecessárias foram removidas (Card, Column, etc.)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,9 +49,7 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
                 contentPadding = paddingValues
             ) {
                 items(eventos) { evento ->
-                    // --- CORREÇÃO DE AMBIGUIDADE ---
-                    // Esta chamada agora usa a função 'EventoItem'
-                    // do ficheiro 'CalendarioScreen.kt' (pois estão no mesmo pacote).
+
                     EventoItem(evento = evento, onClick = {
                         evento.id?.let { id ->
                             navController.navigate(Screen.DetalheEvento.createRoute(id))
@@ -64,6 +61,3 @@ fun ListaEventosScreen(navController: NavController, viewModel: EventoViewModel)
     }
 }
 
-// --- FUNÇÃO DUPLICADA REMOVIDA DAQUI ---
-// A função @Composable fun EventoItem(...) foi apagada deste ficheiro
-// para evitar o conflito.

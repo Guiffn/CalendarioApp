@@ -112,7 +112,7 @@ fun SettingsScreen(navController: NavController, viewModel: EventoViewModel) {
                 icon = Icons.Default.Build,
                 title = "Versão do Aplicativo",
                 subtitle = "1.0.0",
-                onClick = { /* No futuro, pode levar para outra tela */ }
+                onClick = { }
             )
         }
     }
